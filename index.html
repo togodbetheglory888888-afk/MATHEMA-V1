@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MATHEMATH Game</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f8ff;
+      text-align: center;
+      padding: 50px;
+    }
+
+    h1 {
+      font-size: 3rem; /* Bigger title */
+      color: #2c3e50;
+    }
+
+    #score {
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+    }
+
+    #question {
+      font-size: 2rem; /* Bigger question text */
+      margin: 20px 0;
+    }
+
+    input[type="number"] {
+      font-size: 1.5rem; /* Bigger input */
+      padding: 10px;
+      width: 80px;
+      text-align: center;
+    }
+
+    button {
+      font-size: 1.5rem; /* Bigger button text */
+      padding: 15px 25px;
+      margin: 10px;
+      cursor: pointer;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background-color: #2980b9;
+    }
+
+    #result {
+      font-size: 1.5rem;
+      margin-top: 20px;
+      color: #27ae60;
+    }
+
+    #restart {
+      background-color: #e74c3c;
+    }
+
+    #restart:hover {
+      background-color: #c0392b;
+    }
+  </style>
+</head>
+<body>
+  <h1>MATHEMATH Game</h1>
+  <div id="score">Score: 0 / 10</div>
+  <div id="question">Question will appear here</div>
+  <input type="number" id="answer" placeholder="Answer">
+  <div>
+    <button id="submit">Submit</button>
+    <button id="restart">Restart</button>
+  </div>
+  <div id="result"></div>
+
+  <script>
+    let score = 0;
+    let questionCount = 0;
+    const totalQuestions = 10;
+
+    const scoreDiv = document.getElementById('score');
+    const questionDiv = document.getElementById('question');
+    const answerInput = document.getElementById('answer');
+    const submitBtn = document.getElementById('submit');
+    const restartBtn = document.getElementById('restart');
+    const resultDiv = document.getElementById('result');
+
+    let currentAnswer = 0;
+
+    // Function for voice feedback
+    function speak(text) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      window.speechSynthesis.speak(utterance);
+    }
+
+    function generateQuestion() {
+      if (questionCount >= totalQuestions) {
+        questionDiv.textContent = "🎉 Game Over!";
+        resultDiv.textContent = `Your final score: ${score} / ${totalQuestions}`;
+        speak("Congratulations! You finished the game");
+        submitBtn.disabled = true;
+        return;
+      }
+
+      const operations = ["+", "-", "*", "/"];
+      const op = operations[Math.floor(Math.random() * operations.length)];
+
+      let num1 = Math.floor(Math.random() * 20) + 1;
+      let num2 = Math.floor(Math.random() * 20) + 1;
+
+      // Ensure no negative answers or decimals
+      if (op === "-") {
+        if (num2 > num1) [num1, num2] = [num2, num1];
+      } else if (op === "/") {
+        num1 = num1 * num2; // Make divisible
+      }
+
+      currentAnswer = eval(`${num1} ${op} ${num2}`);
+      questionDiv.textContent = `Q${questionCount + 1}: ${num1} ${op} ${num2} = ?`;
+      answerInput.value = "";
+      answerInput.focus();
+    }
+
+    submitBtn.addEventListener('click', () => {
+      const userAnswer = parseInt(answerInput.value);
+      if (!isNaN(userAnswer) && userAnswer === currentAnswer) {
+        score++;
+        resultDiv.textContent = "✅ Correct!";
+        speak("Correct!");
+      } else {
+        resultDiv.textContent = `❌ Wrong! Correct answer: ${currentAnswer}`;
+        speak("Please try again");
+      }
+      questionCount++;
+      scoreDiv.textContent = `Score: ${score} / ${totalQuestions}`;
+
+      setTimeout(generateQuestion, 1000);
+    });
+
+    restartBtn.addEventListener('click', () => {
+      score = 0;
+      questionCount = 0;
+      submitBtn.disabled = false;
+      scoreDiv.textContent = `Score: ${score} / ${totalQuestions}`;
+      resultDiv.textContent = "";
+      generateQuestion();
+    });
+
+    // Start the first question
+    generateQuestion();
+  </script>
+</body>
+</html>
